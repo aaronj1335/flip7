@@ -241,11 +241,19 @@ button:focus-visible {
   border-color: var(--flip7);
 }
 
+.hand-row {
+  display: flex;
+  align-items: center;
+  gap: 0.4rem;
+  padding-right: 0.5rem;
+}
+
 .hand-summary {
   display: flex;
   align-items: center;
   gap: 0.6rem;
-  width: 100%;
+  flex: 1;
+  min-width: 0;
   background: none;
   border: none;
   border-radius: 0;
@@ -255,6 +263,22 @@ button:focus-visible {
 
 .hand-summary:hover:not(:disabled) {
   background-color: #3a3a3a;
+}
+
+.hand-points {
+  width: 3.6rem;
+  flex-shrink: 0;
+  padding: 0.35rem 0.4rem;
+  text-align: right;
+  font-size: 1.15rem;
+  font-weight: 700;
+  font-variant-numeric: tabular-nums;
+  background-color: #242424;
+  border-color: #4a4a4a;
+}
+
+.hand-points:disabled {
+  opacity: 0.5;
 }
 
 .hand-name {
@@ -274,12 +298,6 @@ button:focus-visible {
   color: var(--muted);
   font-size: 0.85rem;
   flex: 1;
-}
-
-.hand-score {
-  font-variant-numeric: tabular-nums;
-  font-weight: 700;
-  flex-shrink: 0;
 }
 
 .chip {

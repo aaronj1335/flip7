@@ -2,23 +2,42 @@
   <h2>Round 2</h2>
   <div class="hand-list">
     <div class="hand">
-      <button type="button" class="hand-summary" aria-expanded="false">
-        <span class="hand-name">Ada</span
-        ><span class="hand-empty">No cards yet</span
-        ><span class="hand-score">0</span>
-      </button>
+      <div class="hand-row">
+        <button type="button" class="hand-summary" aria-expanded="false">
+          <span class="hand-name">Ada</span
+          ><span class="hand-empty"
+            >Enter a score, or tap for the card pad</span
+          ></button
+        ><input
+          class="hand-points"
+          type="text"
+          inputmode="numeric"
+          autocomplete="off"
+          aria-label="Ada round score"
+          value="0"
+        />
+      </div>
     </div>
     <div class="hand flip7">
-      <button type="button" class="hand-summary" aria-expanded="true">
-        <span class="hand-name">Grace</span
-        ><span class="hand-cards"
-          ><span class="chip">1</span><span class="chip">2</span
-          ><span class="chip">3</span><span class="chip">4</span
-          ><span class="chip">5</span><span class="chip">6</span
-          ><span class="chip">7</span><span class="chip modifier">x2</span
-          ><span class="chip flip7">FLIP 7</span></span
-        ><span class="hand-score">71</span>
-      </button>
+      <div class="hand-row">
+        <button type="button" class="hand-summary" aria-expanded="true">
+          <span class="hand-name">Grace</span
+          ><span class="hand-cards"
+            ><span class="chip">1</span><span class="chip">2</span
+            ><span class="chip">3</span><span class="chip">4</span
+            ><span class="chip">5</span><span class="chip">6</span
+            ><span class="chip">7</span><span class="chip modifier">x2</span
+            ><span class="chip flip7">FLIP 7</span></span
+          ></button
+        ><input
+          class="hand-points"
+          type="text"
+          inputmode="numeric"
+          autocomplete="off"
+          aria-label="Grace round score"
+          value="71"
+        />
+      </div>
       <div class="hand-editor">
         <h3>Number cards</h3>
         <div class="card-grid">
@@ -127,11 +146,19 @@
       </div>
     </div>
     <div class="hand">
-      <button type="button" class="hand-summary" aria-expanded="false">
-        <span class="hand-name">Alan</span
-        ><span class="hand-cards"><span class="chip">8</span></span
-        ><span class="hand-score">8</span>
-      </button>
+      <div class="hand-row">
+        <button type="button" class="hand-summary" aria-expanded="false">
+          <span class="hand-name">Alan</span
+          ><span class="hand-cards"><span class="chip">8</span></span></button
+        ><input
+          class="hand-points"
+          type="text"
+          inputmode="numeric"
+          autocomplete="off"
+          aria-label="Alan round score"
+          value="8"
+        />
+      </div>
     </div>
   </div>
   <div class="button-row" style="margin-top: 0.9rem">

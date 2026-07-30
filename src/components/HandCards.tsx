@@ -7,7 +7,7 @@ interface HandCardsProps {
 
 export const HandCards: React.FC<HandCardsProps> = ({ hand }) => {
   if (isHandEmpty(hand)) {
-    return <span className="hand-empty">No cards yet</span>;
+    return <span className="hand-empty">Enter a score, or tap for the card pad</span>;
   }
 
   return (

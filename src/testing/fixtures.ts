@@ -24,6 +24,18 @@ export function gameInProgress(): Game {
   return game;
 }
 
+export function gameWithTypedScores(): Game {
+  let game = createGame(['Ada', 'Grace', 'Alan']);
+  const [ada, grace, alan] = game.players;
+
+  game = applyAction(game, { type: 'setPoints', playerId: ada.id, points: 38 });
+  game = applyAction(game, { type: 'setPoints', playerId: grace.id, points: 0 });
+  game = applyAction(game, { type: 'toggleNumber', playerId: alan.id, value: 12 });
+  game = applyAction(game, { type: 'toggleModifier', playerId: alan.id, modifier: '+4' });
+
+  return game;
+}
+
 export function finishedGame(): Game {
   let game = createGame(['Ada', 'Grace'], 20);
   const [ada, grace] = game.players;

@@ -1,7 +1,8 @@
 # Flip 7 Scorekeeper
 
-Scorekeeper for the Flip 7 card game. Tap the cards each player collected and it does the
-arithmetic: `x2` before the `+` modifiers, 0 for a bust, and the +15 bonus for a Flip 7.
+Scorekeeper for the Flip 7 card game. Type each player's round score straight into their row, or
+tap the cards they collected and let it do the arithmetic: `x2` before the `+` modifiers, 0 for a
+bust, and the +15 bonus for a Flip 7.
 
 The whole game — including the round you are in the middle of — is written to **IndexedDB** on every
 tap, so refreshing, backgrounding the tab, or losing the browser never loses the score.
@@ -13,8 +14,15 @@ tap, so refreshing, backgrounding the tab, or losing the browser never loses the
 Visit https://aaronstacy.com/flip7/
 
 1. Enter player names and the target score (200 by default), then **Start game**.
-2. Tap a player to open their card pad. Tap the number cards they collected, any modifier cards
-   (`x2`, `+2` … `+10`), or **Bust**. The round score updates as you tap.
+2. Record each player's round score, whichever way suits the table:
+   - **Type it.** Every player's row has a score field. Add up the flipped cards yourself and type
+     the number in.
+   - **Tap the cards.** Tap a player's name to open their card pad, then tap the number cards they
+     collected, any modifier cards (`x2`, `+2` … `+10`), or **Bust**. The score field fills in as
+     you tap.
+
+   Typing replaces any cards recorded for that player, and tapping a card replaces a typed score, so
+   the row never shows a breakdown that disagrees with the number.
 3. **End round** commits the round, adds it to the running totals and opens the next one.
    **Undo last round** reopens the previous round if something was mis-recorded.
 4. When someone crosses the target score the game closes and the leader is declared the winner.
@@ -23,6 +31,9 @@ Finished and abandoned games stay in the browser's database and can be resumed o
 **Saved games** list on the new-game screen.
 
 ### Scoring
+
+A typed score is taken exactly as entered — no bonus is inferred from it. The table below is what
+the card pad computes for you.
 
 | Card | Effect |
 | --- | --- |

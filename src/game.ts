@@ -15,6 +15,7 @@ export interface Hand {
   numbers: number[];
   modifiers: Modifier[];
   busted: boolean;
+  points?: number | null;
 }
 
 export interface Round {
@@ -32,6 +33,7 @@ export interface Game {
 }
 
 export type GameAction =
+  | { type: 'setPoints'; playerId: string; points: number }
   | { type: 'toggleNumber'; playerId: string; value: number }
   | { type: 'toggleModifier'; playerId: string; modifier: Modifier }
   | { type: 'toggleBusted'; playerId: string }
@@ -40,7 +42,7 @@ export type GameAction =
   | { type: 'undoRound' };
 
 export function emptyHand(): Hand {
-  return { numbers: [], modifiers: [], busted: false };
+  return { numbers: [], modifiers: [], busted: false, points: null };
 }
 
 export function emptyRound(players: readonly Player[]): Round {
@@ -55,18 +57,25 @@ export function handOf(round: Round, playerId: string): Hand {
   return round.hands[playerId] ?? emptyHand();
 }
 
+export function typedPoints(hand: Hand): number | null {
+  return hand.points ?? null;
+}
+
+export function isTyped(hand: Hand): boolean {
+  return typedPoints(hand) !== null;
+}
+
 export function isHandEmpty(hand: Hand): boolean {
-  return !hand.busted && hand.numbers.length === 0 && hand.modifiers.length === 0;
+  return (
+    !hand.busted && !isTyped(hand) && hand.numbers.length === 0 && hand.modifiers.length === 0
+  );
 }
 
 export function hasFlip7(hand: Hand): boolean {
-  return !hand.busted && hand.numbers.length >= FLIP_7_SIZE;
+  return !hand.busted && !isTyped(hand) && hand.numbers.length >= FLIP_7_SIZE;
 }
 
-export function scoreHand(hand: Hand): number {
-  if (hand.busted) {
-    return 0;
-  }
+export function scoreCards(hand: Hand): number {
   const numberTotal = hand.numbers.reduce((total, value) => total + value, 0);
   const doubled = hand.modifiers.includes('x2') ? numberTotal * 2 : numberTotal;
   const added = hand.modifiers.reduce(
@@ -74,6 +83,13 @@ export function scoreHand(hand: Hand): number {
     0
   );
   return doubled + added + (hasFlip7(hand) ? FLIP_7_BONUS : 0);
+}
+
+export function scoreHand(hand: Hand): number {
+  if (hand.busted) {
+    return 0;
+  }
+  return typedPoints(hand) ?? scoreCards(hand);
 }
 
 export function scoreRound(round: Round, players: readonly Player[]): Record<string, number> {
@@ -158,14 +174,23 @@ function toggle<T>(values: readonly T[], value: T): T[] {
 
 export function applyAction(game: Game, action: GameAction): Game {
   switch (action.type) {
+    case 'setPoints':
+      return updateHand(game, action.playerId, (hand) => ({
+        ...hand,
+        numbers: [],
+        modifiers: [],
+        points: action.points,
+      }));
     case 'toggleNumber':
       return updateHand(game, action.playerId, (hand) => ({
         ...hand,
+        points: null,
         numbers: toggle(hand.numbers, action.value).sort((a, b) => a - b),
       }));
     case 'toggleModifier':
       return updateHand(game, action.playerId, (hand) => ({
         ...hand,
+        points: null,
         modifiers: MODIFIER_CARDS.filter((modifier) =>
           toggle(hand.modifiers, action.modifier).includes(modifier)
         ),

@@ -5,13 +5,12 @@ import React from 'react';
 import { format } from 'prettier';
 import { RoundEditor } from './RoundEditor.tsx';
 import { assertSnapshot } from '../testing/snapshot.ts';
-import { gameInProgress } from '../testing/fixtures.ts';
+import { gameInProgress, gameWithTypedScores } from '../testing/fixtures.ts';
 import { Round } from '../game.ts';
 
 const testFilePath = fileURLToPath(import.meta.url);
 
-async function render(expandedPlayerId: string | null): Promise<string> {
-  const game = gameInProgress();
+async function render(expandedPlayerId: string | null, game = gameInProgress()): Promise<string> {
   const html = renderToStaticMarkup(
     React.createElement(RoundEditor, {
       players: game.players,
@@ -32,4 +31,11 @@ test('RoundEditor renders collapsed hand summaries', async (t) => {
 
 test('RoundEditor renders the card picker for the expanded player', async (t) => {
   await assertSnapshot(t, await render('p2'), { testFilePath, extension: '.html' });
+});
+
+test('RoundEditor renders typed scores alongside a card hand', async (t) => {
+  await assertSnapshot(t, await render(null, gameWithTypedScores()), {
+    testFilePath,
+    extension: '.html',
+  });
 });

@@ -6,6 +6,7 @@ import {
   Modifier,
   NUMBER_CARDS,
   hasFlip7,
+  isTyped,
   scoreHand,
 } from '../game';
 
@@ -70,7 +71,9 @@ export const HandEditor: React.FC<HandEditorProps> = ({
         <span>
           {hand.busted
             ? 'Busted, scores 0 for the round'
-            : `Round score ${score}${hasFlip7(hand) ? ` (includes the +${FLIP_7_BONUS} Flip 7 bonus)` : ''}`}
+            : `Round score ${score}${hasFlip7(hand) ? ` (includes the +${FLIP_7_BONUS} Flip 7 bonus)` : ''}${
+                isTyped(hand) ? ', typed in directly' : ''
+              }`}
         </span>
         <button type="button" onClick={onClear}>
           Clear

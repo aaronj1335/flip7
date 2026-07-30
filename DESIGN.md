@@ -27,6 +27,7 @@ Hand
   numbers: number[]          0..12, unique, sorted
   modifiers: Modifier[]      'x2' | '+2' | '+4' | '+6' | '+8' | '+10'
   busted: boolean
+  points?: number | null     a score typed in directly, overriding the cards
 ```
 
 `current` being a distinct field rather than the last element of `rounds` keeps two questions
@@ -36,21 +37,27 @@ durable to live.
 
 ### Scoring
 
-`scoreHand` is the only place the rules live:
+At the table people usually just add up the numbers on the cards they flipped, so a round score can
+be typed straight in. `points` holds that number and takes precedence over the cards:
 
 1. A busted hand scores 0, regardless of what else it holds.
-2. Sum the number cards.
-3. If the hand holds `x2`, double that sum.
-4. Add each `+n` card.
-5. Add 15 if the hand holds seven number cards (a Flip 7).
+2. If `points` is set, that is the score, exactly as entered.
+3. Otherwise `scoreCards` sums the number cards, doubles that sum if the hand holds `x2`, adds each
+   `+n` card, and adds 15 for a Flip 7 (seven number cards).
 
-`x2` deliberately applies before the `+` cards and does not multiply the Flip 7 bonus.
+`x2` deliberately applies before the `+` cards and does not multiply the Flip 7 bonus. A typed score
+never picks up a Flip 7 bonus — the number entered is the whole answer.
+
+Exactly one of `points` and the cards is ever populated, enforced in the reducer: typing clears the
+cards, and tapping a card clears `points`. That is what keeps a row from displaying a card breakdown
+that disagrees with the number beside it. `points` is optional on the interface because games saved
+before it existed have no such field; `?? null` covers both.
 
 ### Transitions
 
 All state changes go through `applyAction(game, action): Game` in `src/game.ts` — a pure reducer
-covering `toggleNumber`, `toggleModifier`, `toggleBusted`, `clearHand`, `endRound` and `undoRound`.
-Every card tap is a toggle, so a mis-tap is undone by tapping again.
+covering `setPoints`, `toggleNumber`, `toggleModifier`, `toggleBusted`, `clearHand`, `endRound` and
+`undoRound`. Every card tap is a toggle, so a mis-tap is undone by tapping again.
 
 `endRound` pushes `current` onto `rounds`, then either opens a fresh round or, if someone has crossed
 `targetScore`, sets `current` to `null` and ends the game. `undoRound` is the exact inverse: it pops
@@ -83,8 +90,9 @@ One column, sized for a phone held over a table:
 
 - **Scoreboard** — standings, each player's live score for the round in progress, and points needed
   to win.
-- **Round editor** — one row per player showing their cards as chips and their round score. Tapping a
-  row expands a card pad; only one is open at a time so the list stays scannable.
+- **Round editor** — one row per player: their cards as chips, and their round score as an editable
+  field so the common case is one tap and a number. Tapping the name expands a card pad for hands
+  worth working through; only one is open at a time so the list stays scannable.
 - **Round history** — every committed round as a table, with busts in red and Flip 7 rounds starred.
 
 Components are presentational and take a `Game` (or a `Hand`) plus callbacks, which makes them

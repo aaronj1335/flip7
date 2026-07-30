@@ -10,6 +10,7 @@ import {
   emptyHand,
   hasFlip7,
   isGameOver,
+  isTyped,
   scoreHand,
   scoreRound,
   standings,
@@ -53,6 +54,106 @@ test('scoreHand applies x2 to the number cards but not to the Flip 7 bonus', () 
 
 test('hasFlip7 is false for a busted hand', () => {
   assert.strictEqual(hasFlip7(hand([1, 2, 3, 4, 5, 6, 7], [], true)), false);
+});
+
+test('scoreHand returns a typed score verbatim', () => {
+  assert.strictEqual(scoreHand({ numbers: [], modifiers: [], busted: false, points: 37 }), 37);
+});
+
+test('scoreHand treats a typed zero as a real score, not as absent', () => {
+  assert.strictEqual(scoreHand({ numbers: [], modifiers: [], busted: false, points: 0 }), 0);
+  assert.strictEqual(isTyped({ numbers: [], modifiers: [], busted: false, points: 0 }), true);
+});
+
+test('scoreHand falls back to the cards when nothing was typed', () => {
+  assert.strictEqual(scoreHand({ numbers: [4, 8], modifiers: ['+2'], busted: false }), 14);
+  assert.strictEqual(isTyped({ numbers: [4, 8], modifiers: ['+2'], busted: false }), false);
+});
+
+test('a typed score never collects the Flip 7 bonus on its own', () => {
+  const typed = { numbers: [], modifiers: [], busted: false, points: 21 };
+  assert.strictEqual(hasFlip7(typed), false);
+  assert.strictEqual(scoreHand(typed), 21);
+});
+
+test('a busted hand scores zero even with a typed score', () => {
+  assert.strictEqual(scoreHand({ numbers: [], modifiers: [], busted: true, points: 99 }), 0);
+});
+
+test('setPoints replaces any cards so the row cannot show a stale breakdown', () => {
+  let game = createGame(['Ada']);
+  const playerId = game.players[0].id;
+  game = applyAction(game, { type: 'toggleNumber', playerId, value: 9 });
+  game = applyAction(game, { type: 'toggleModifier', playerId, modifier: 'x2' });
+  game = applyAction(game, { type: 'setPoints', playerId, points: 42 });
+
+  const hand = game.current?.hands[playerId];
+  assert.deepStrictEqual(hand?.numbers, []);
+  assert.deepStrictEqual(hand?.modifiers, []);
+  assert.strictEqual(scoreHand(hand as Hand), 42);
+});
+
+test('tapping a card clears a typed score', () => {
+  let game = createGame(['Ada']);
+  const playerId = game.players[0].id;
+  game = applyAction(game, { type: 'setPoints', playerId, points: 42 });
+  game = applyAction(game, { type: 'toggleNumber', playerId, value: 5 });
+
+  const hand = game.current?.hands[playerId] as Hand;
+  assert.strictEqual(isTyped(hand), false);
+  assert.strictEqual(scoreHand(hand), 5);
+});
+
+test('tapping a modifier clears a typed score', () => {
+  let game = createGame(['Ada']);
+  const playerId = game.players[0].id;
+  game = applyAction(game, { type: 'setPoints', playerId, points: 42 });
+  game = applyAction(game, { type: 'toggleModifier', playerId, modifier: '+6' });
+
+  const hand = game.current?.hands[playerId] as Hand;
+  assert.strictEqual(isTyped(hand), false);
+  assert.strictEqual(scoreHand(hand), 6);
+});
+
+test('bust survives a typed score and restores it when cleared', () => {
+  let game = createGame(['Ada']);
+  const playerId = game.players[0].id;
+  game = applyAction(game, { type: 'setPoints', playerId, points: 30 });
+  game = applyAction(game, { type: 'toggleBusted', playerId });
+  assert.strictEqual(scoreHand(game.current?.hands[playerId] as Hand), 0);
+
+  game = applyAction(game, { type: 'toggleBusted', playerId });
+  assert.strictEqual(scoreHand(game.current?.hands[playerId] as Hand), 30);
+});
+
+test('clearHand drops a typed score', () => {
+  let game = createGame(['Ada']);
+  const playerId = game.players[0].id;
+  game = applyAction(game, { type: 'setPoints', playerId, points: 30 });
+  game = applyAction(game, { type: 'clearHand', playerId });
+  assert.deepStrictEqual(game.current?.hands[playerId], emptyHand());
+});
+
+test('typed scores accumulate into totals and win the game', () => {
+  let game = createGame(['Ada', 'Grace'], 50);
+  const [ada, grace] = game.players;
+  game = applyAction(game, { type: 'setPoints', playerId: ada.id, points: 30 });
+  game = applyAction(game, { type: 'setPoints', playerId: grace.id, points: 12 });
+  game = applyAction(game, { type: 'endRound' });
+  game = applyAction(game, { type: 'setPoints', playerId: ada.id, points: 25 });
+  game = applyAction(game, { type: 'endRound' });
+
+  assert.deepStrictEqual(totals(game), { [ada.id]: 55, [grace.id]: 12 });
+  assert.deepStrictEqual(
+    winners(game).map((player) => player.name),
+    ['Ada']
+  );
+});
+
+test('a hand saved before typed scores existed still scores from its cards', () => {
+  const legacy = { numbers: [10, 11], modifiers: ['x2'] as Modifier[], busted: false };
+  assert.strictEqual(isTyped(legacy), false);
+  assert.strictEqual(scoreHand(legacy), 42);
 });
 
 test('createGame names unnamed players and starts an empty first round', () => {

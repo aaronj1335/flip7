@@ -2,6 +2,7 @@ import React from 'react';
 import { GameAction, Player, Round, handOf, hasFlip7, scoreHand } from '../game';
 import { HandCards } from './HandCards';
 import { HandEditor } from './HandEditor';
+import { PointsInput } from './PointsInput';
 
 interface RoundEditorProps {
   players: readonly Player[];
@@ -37,16 +38,23 @@ export const RoundEditor: React.FC<RoundEditorProps> = ({
 
         return (
           <div className={classNames.join(' ')} key={player.id}>
-            <button
-              type="button"
-              className="hand-summary"
-              aria-expanded={expanded}
-              onClick={() => onExpandPlayer(expanded ? null : player.id)}
-            >
-              <span className="hand-name">{player.name}</span>
-              <HandCards hand={hand} />
-              <span className="hand-score">{scoreHand(hand)}</span>
-            </button>
+            <div className="hand-row">
+              <button
+                type="button"
+                className="hand-summary"
+                aria-expanded={expanded}
+                onClick={() => onExpandPlayer(expanded ? null : player.id)}
+              >
+                <span className="hand-name">{player.name}</span>
+                <HandCards hand={hand} />
+              </button>
+              <PointsInput
+                value={scoreHand(hand)}
+                label={`${player.name} round score`}
+                disabled={hand.busted}
+                onChange={(points) => onAction({ type: 'setPoints', playerId: player.id, points })}
+              />
+            </div>
             {expanded ? (
               <HandEditor
                 hand={hand}
