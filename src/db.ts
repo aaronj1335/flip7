@@ -102,13 +102,12 @@ export function createGameStore(factory: IDBFactory): GameStore {
     },
 
     async remove(id: string): Promise<void> {
+      const wasActive = (await readActiveId()) === id;
       const database = await db();
       const transaction = database.transaction([GAMES_STORE, META_STORE], 'readwrite');
       transaction.objectStore(GAMES_STORE).delete(id);
-      const meta = transaction.objectStore(META_STORE);
-      const activeId = await promisify(meta.get(ACTIVE_GAME_KEY));
-      if (activeId === id) {
-        meta.delete(ACTIVE_GAME_KEY);
+      if (wasActive) {
+        transaction.objectStore(META_STORE).delete(ACTIVE_GAME_KEY);
       }
       await transactionDone(transaction);
     },

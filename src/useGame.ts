@@ -1,4 +1,4 @@
-import { useCallback, useEffect, useMemo, useState } from 'react';
+import { useCallback, useEffect, useMemo, useRef, useState } from 'react';
 import { createGameStore, GameStore } from './db';
 import { applyAction, createGame, Game, GameAction, TARGET_SCORE } from './game';
 
@@ -21,22 +21,27 @@ export function useGame(store: GameStore | null): GameController {
   const [error, setError] = useState<string | null>(null);
   const [game, setGame] = useState<Game | null>(null);
   const [recentGames, setRecentGames] = useState<Game[]>([]);
+  const latestGame = useRef<Game | null>(null);
 
   const fail = useCallback((cause: unknown) => {
     setError(cause instanceof Error ? cause.message : String(cause));
     setStatus('error');
   }, []);
 
-  const refreshRecentGames = useCallback(
-    async (from: GameStore) => {
-      try {
-        setRecentGames(await from.recentGames());
-      } catch (cause: unknown) {
-        fail(cause);
-      }
-    },
-    [fail]
-  );
+  const show = useCallback((next: Game | null) => {
+    latestGame.current = next;
+    setGame(next);
+  }, []);
+
+  const refreshRecentGames = useCallback(() => {
+    if (store === null) {
+      return;
+    }
+    store
+      .recentGames()
+      .then(setRecentGames)
+      .catch(fail);
+  }, [store, fail]);
 
   useEffect(() => {
     if (store === null) {
@@ -44,22 +49,22 @@ export function useGame(store: GameStore | null): GameController {
       return;
     }
     let cancelled = false;
-    const load = async () => {
-      try {
-        const active = await store.activeGame();
+    store
+      .activeGame()
+      .then((active) => {
         if (cancelled) {
           return;
         }
+        latestGame.current = active;
         setGame(active);
         setStatus('ready');
-        await refreshRecentGames(store);
-      } catch (cause: unknown) {
+        refreshRecentGames();
+      })
+      .catch((cause: unknown) => {
         if (!cancelled) {
           fail(cause);
         }
-      }
-    };
-    load();
+      });
     return () => {
       cancelled = true;
     };
@@ -67,35 +72,30 @@ export function useGame(store: GameStore | null): GameController {
 
   const persist = useCallback(
     (next: Game) => {
-      setGame(next);
+      show(next);
       if (store === null) {
         return;
       }
       store
         .save(next)
-        .then(() => refreshRecentGames(store))
+        .then(refreshRecentGames)
         .catch(fail);
     },
-    [store, refreshRecentGames, fail]
+    [store, show, refreshRecentGames, fail]
   );
 
   const dispatch = useCallback(
     (action: GameAction) => {
-      setGame((previous) => {
-        if (previous === null) {
-          return previous;
-        }
-        const next = applyAction(previous, action);
-        if (next !== previous && store !== null) {
-          store
-            .save(next)
-            .then(() => refreshRecentGames(store))
-            .catch(fail);
-        }
-        return next;
-      });
+      const previous = latestGame.current;
+      if (previous === null) {
+        return;
+      }
+      const next = applyAction(previous, action);
+      if (next !== previous) {
+        persist(next);
+      }
     },
-    [store, refreshRecentGames, fail]
+    [persist]
   );
 
   const startGame = useCallback(
@@ -111,35 +111,37 @@ export function useGame(store: GameStore | null): GameController {
       if (found === undefined) {
         return;
       }
-      setGame(found);
+      show(found);
       store?.setActiveGame(id).catch(fail);
     },
-    [recentGames, store, fail]
+    [recentGames, store, show, fail]
   );
 
   const leaveGame = useCallback(() => {
-    setGame(null);
+    show(null);
     if (store === null) {
       return;
     }
     store
       .setActiveGame(null)
-      .then(() => refreshRecentGames(store))
+      .then(refreshRecentGames)
       .catch(fail);
-  }, [store, refreshRecentGames, fail]);
+  }, [store, show, refreshRecentGames, fail]);
 
   const deleteGame = useCallback(
     (id: string) => {
-      setGame((previous) => (previous?.id === id ? null : previous));
+      if (latestGame.current?.id === id) {
+        show(null);
+      }
       if (store === null) {
         return;
       }
       store
         .remove(id)
-        .then(() => refreshRecentGames(store))
+        .then(refreshRecentGames)
         .catch(fail);
     },
-    [store, refreshRecentGames, fail]
+    [store, show, refreshRecentGames, fail]
   );
 
   return useMemo(
