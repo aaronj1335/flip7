@@ -6,11 +6,11 @@ arithmetic: `x2` before the `+` modifiers, 0 for a bust, and the +15 bonus for a
 The whole game — including the round you are in the middle of — is written to **IndexedDB** on every
 tap, so refreshing, backgrounding the tab, or losing the browser never loses the score.
 
-[![Screenshot of the Flip 7 scorekeeper](public/flip7-screen-shot.png)](https://aaronj1335.github.io/flip7/)
+[![Screenshot of the Flip 7 scorekeeper](public/flip7-screen-shot.png)](https://aaronstacy.com/flip7/)
 
 ## Usage
 
-Visit https://aaronj1335.github.io/flip7/
+Visit https://aaronstacy.com/flip7/
 
 1. Enter player names and the target score (200 by default), then **Start game**.
 2. Tap a player to open their card pad. Tap the number cards they collected, any modifier cards
