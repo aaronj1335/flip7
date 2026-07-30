@@ -3,6 +3,7 @@ import { PlayerSetup } from './components/PlayerSetup';
 import { RoundEditor } from './components/RoundEditor';
 import { RoundHistory } from './components/RoundHistory';
 import { Scoreboard } from './components/Scoreboard';
+import { StorageNotice } from './components/StorageNotice';
 import { winners } from './game';
 import { browserGameStore, useGame } from './useGame';
 
@@ -11,6 +12,7 @@ function App() {
   const {
     status,
     error,
+    persistent,
     game,
     recentGames,
     dispatch,
@@ -29,7 +31,11 @@ function App() {
         <div>
           <h1>Flip 7 Scorekeeper</h1>
           <div className="subtitle">
-            {game === null ? 'Saved in your browser' : `Playing to ${game.targetScore}`}
+            {game === null
+              ? persistent
+                ? 'Saved in your browser'
+                : 'Not being saved'
+              : `Playing to ${game.targetScore}`}
           </div>
         </div>
         {game === null ? null : (
@@ -40,7 +46,7 @@ function App() {
       </header>
 
       {status === 'loading' ? <div className="panel">Loading saved game&hellip;</div> : null}
-      {error === null ? null : <div className="panel error">Storage error: {error}</div>}
+      <StorageNotice persistent={persistent} error={error} />
 
       {status === 'loading' ? null : game === null ? (
         <PlayerSetup

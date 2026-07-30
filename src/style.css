@@ -373,10 +373,17 @@ button:focus-visible {
 
 .history-scroll {
   overflow-x: auto;
+  background-image: linear-gradient(to left, var(--panel), rgba(42, 42, 42, 0)),
+    radial-gradient(farthest-side at 100% 50%, rgba(0, 0, 0, 0.45), rgba(0, 0, 0, 0));
+  background-position: right center, right center;
+  background-repeat: no-repeat;
+  background-size: 2rem 100%, 0.75rem 100%;
+  background-attachment: local, scroll;
 }
 
 .history {
-  border-collapse: collapse;
+  border-collapse: separate;
+  border-spacing: 0;
   width: 100%;
   font-variant-numeric: tabular-nums;
 }
@@ -398,6 +405,10 @@ button:focus-visible {
 }
 
 .history th.round-label {
+  position: sticky;
+  left: 0;
+  z-index: 1;
+  background-color: var(--panel);
   text-align: left;
   color: var(--muted);
   font-weight: 400;
@@ -433,6 +444,15 @@ button:focus-visible {
   margin: 0;
   color: var(--muted);
   font-size: 0.9rem;
+}
+
+.banner.warning {
+  border-color: var(--flip7);
+  background-color: rgba(245, 158, 11, 0.12);
+}
+
+.banner.warning h2 {
+  color: var(--flip7);
 }
 
 .recent-game {
@@ -472,17 +492,13 @@ button:focus-visible {
   padding-left: 1.2rem;
 }
 
-.error {
-  color: var(--bust);
-}
-
 @media (max-width: 480px) {
   .app {
     padding: 0.75rem 0.6rem 3rem;
   }
 
   .hand-name {
-    max-width: 7rem;
+    max-width: 45%;
     overflow: hidden;
     text-overflow: ellipsis;
     white-space: nowrap;

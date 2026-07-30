@@ -7,6 +7,7 @@ export type GameStatus = 'loading' | 'ready' | 'error';
 export interface GameController {
   status: GameStatus;
   error: string | null;
+  persistent: boolean;
   game: Game | null;
   recentGames: Game[];
   dispatch: (action: GameAction) => void;
@@ -148,6 +149,7 @@ export function useGame(store: GameStore | null): GameController {
     () => ({
       status,
       error,
+      persistent: store !== null,
       game,
       recentGames,
       dispatch,
@@ -156,7 +158,7 @@ export function useGame(store: GameStore | null): GameController {
       leaveGame,
       deleteGame,
     }),
-    [status, error, game, recentGames, dispatch, startGame, resumeGame, leaveGame, deleteGame]
+    [status, error, store, game, recentGames, dispatch, startGame, resumeGame, leaveGame, deleteGame]
   );
 }
 
